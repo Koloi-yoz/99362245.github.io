@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>夏日驾校恋曲 ～那个夏天，白色驾校车与我～</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background: #ffe6f2;
+            background-image: radial-gradient(#ffc0d8 10%, transparent 11%),
+                              radial-gradient(#ffc0d8 10%, transparent 11%);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            overflow: hidden;
+            color: #442233;
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* 标题界面 */
+        #title-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(160deg, #ffd6e8, #ffe6f2);
+            background-image: radial-gradient(#ffb8d0 8%, transparent 9%),
+                              radial-gradient(#ffb8d0 8%, transparent 9%);
+            background-size: 40px 40px;
+            background-position: 0 0,20px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        #game-title {
+            font-size: 48px;
+            color: #d64888;
+            text-shadow: 2px 2px 0 #ffffff, 0 0 12px #ff99bb;
+            margin-bottom: 12px;
+        }
+        #game-subtitle {
+            font-size: 20px;
+            color: #b84477;
+            margin-bottom: 60px;
+        }
+        #start-btn {
+            padding:14px 40px;
+            font-size:22px;
+            background:#ff88b8;
+            color:#fff;
+            border:none;
+            border-radius:99px;
+            box-shadow:0 4px 0 #dd5588;
+            cursor:pointer;
+            transition:0.15s;
+        }
+        #start-btn:hover{
+            transform:translateY(-2px);
+            background:#ff70aa;
+        }
+
+        /* 背景场景 */
+        #bg-layer {
+            position:absolute;
+            width:100%;
+            height:100%;
+            background-size:cover;
+            background-position:center;
+            z-index:1;
+        }
+
+        /* 人物CG立绘 透明PNG */
+        #cg-layer {
+            position:absolute;
+            width:100%;
+            height:100%;
+            z-index:2;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            pointer-events:none;
+        }
+        .char-cg {
+            max-height:55vh;
+            max-width:50vw;
+            filter:drop-shadow(0px 4px 8px rgba(180,60,110,0.25));
+            opacity:0;
+            transition:opacity 0.6s ease;
+        }
+        .car-cg {
+            max-height:40vh;
+            max-width:45vw;
+            filter:drop-shadow(0px 4px 8px rgba(180,60,110,0.25));
+            opacity:0;
+            transition:opacity 0.6s ease;
+        }
+
+        /* 对话框 粉色波点 */
+        #dialog-box {
+            position:absolute;
+            bottom:40px;
+            left:50%;
+            transform:translateX(-50%);
+            width:85%;
+            max-width:820px;
+            background:#fff0f6;
+            background-image:radial-gradient(#ffc8dd 6%,transparent 7%);
+            background-size:18px 18px;
+            border:4px solid #ff99bb;
+            border-radius:20px;
+            padding:22px 26px;
+            z-index:10;
+        }
+        #speaker {
+            font-size:20px;
+            color:#c44477;
+            margin-bottom:8px;
+            font-weight:bold;
+        }
+        #dialog-text {
+            font-size:18px;
+            line-height:1.65;
+            min-height:70px;
+        }
+        #next-indicator {
+            position:absolute;
+            right:24px;
+            bottom:16px;
+            font-size:22px;
+            color:#ff77aa;
+            animation:blink 1.2s infinite;
+        }
+        @keyframes blink {
+            0%,100%{opacity:1;}
+            50%{opacity:0.2;}
+        }
+
+        /* 选项按钮 */
+        #choice-container {
+            position:absolute;
+            bottom:160px;
+            left:50%;
+            transform:translateX(-50%);
+            width:80%;
+            max-width:700px;
+            z-index:11;
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+        }
+        .choice-btn {
+            padding:14px 18px;
+            font-size:18px;
+            background:#ffe0ee;
+            border:3px solid #ff99bb;
+            border-radius:14px;
+            cursor:pointer;
+            transition:0.2s;
+        }
+        .choice-btn:hover {
+            background:#ffc8dd;
+            transform:scale(1.02);
+        }
+
+        /* 菜单按钮 */
+        #menu-btn {
+            position:absolute;
+            top:16px;
+            right:16px;
+            z-index:20;
+            padding:8px 14px;
+            background:#ff88b8;
+            color:white;
+            border:none;
+            border-radius:10px;
+            cursor:pointer;
+        }
+
+        /* 结局画面 */
+        #ending-screen {
+            position:absolute;
+            width:100%;
+            height:100%;
+            background:rgba(255,220,235,0.92);
+            z-index:90;
+            display:none;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+        }
+        #ending-text {
+            font-size:34px;
+            color:#b83870;
+            text-align:center;
+            margin-bottom:40px;
+        }
+        #restart-btn {
+            padding:14px 36px;
+            font-size:20px;
+            background:#ff88b8;
+            color:#fff;
+            border:none;
+            border-radius:99px;
+            cursor:pointer;
+        }
+
+        .hidden {
+            display:none !important;
+        }
+    </style>
+</head>
+<body>
+<div id="game-container">
+    <div id="title-screen">
+        <h1 id="game-title">夏日驾校恋曲</h1>
+        <div id="game-subtitle">～那个夏天，白色驾校车与我～</div>
+        <button id="start-btn">开始游戏</button>
+    </div>
+
+    <div id="bg-layer"></div>
+    <div id="cg-layer">
+        <img class="char-cg" id="char-cg" alt="人物立绘">
+        <img class="car-cg" id="car-cg" alt="驾校车">
+    </div>
+
+    <div id="dialog-box" class="hidden">
+        <div id="speaker"></div>
+        <div id="dialog-text"></div>
+        <div id="next-indicator">♥</div>
+    </div>
+
+    <div id="choice-container" class="hidden"></div>
+
+    <button id="menu-btn" class="hidden">菜单</button>
+
+    <div id="ending-screen">
+        <div id="ending-text"></div>
+        <button id="restart-btn">重新开始</button>
+    </div>
+</div>
+
+<script>
+// ========== 素材资源（替换为你的透明PNG图片地址） ==========
+const RESOURCES = {
+    // 背景场景图
+    bg: {
+        gate: "https://p3-flow-image-sign.byteimg.com/ocean-cloud-tos/9a244130299e403899412d3100403111~tplv-a9rns2rl98-image.image",
+        hospital: "https://p3-flow-image-sign.byteimg.com/ocean-cloud-tos/22031240244e4008900f232001431412~tplv-a9rns2rl98-image.image",
+        bed: "https://p3-flow-image-sign.byteimg.com/ocean-cloud-tos/11321442234440089000223011232421~tplv-a9rns2rl98-image.image",
+        phone: "https://p3-flow-image-sign.byteimg.com/ocean-cloud-tos/4321412311244008998766543211123~tplv-a9rns2rl98-image.image",
+        driverSeat: "https://p3-flow-image-sign.byteimg.com/ocean-cloud-tos/9a244130299e403899412d3100403111~tplv-a9rns2rl98-image.image",
+        coachPractice: "https://p3-flow-image-sign.byteimg.com/ocean-cloud-tos/7723412311244008998766543211123~tplv-a9rns2rl98-image.image",
+        crash: "https://p3-flow-image-sign.byteimg.com/ocean-cloud-tos/8823412311244008998766543211123~tplv-a9rns2rl98-image.image",
+        seatbelt: "https://p3-flow-image-sign.byteimg.com/ocean-cloud-tos/9923412311244008998766543211123~tplv-a9rns2rl98-image.image",
+        photo: "https://p3-flow-image-sign.byteimg.com/ocean-cloud-tos/10023412311244008998766543211123~tplv-a9rns2rl98-image.image"
+    },
+    // 透明底立绘PNG
+    cg: {
+        girl: "https://p3-flow-image-sign.byteimg.com/ocean-cloud-tos/9fde9234123440089987665432111234~tplv-a9rns2rl98-image.png",
+        coachAngry: "https://p3-flow-image-sign.byteimg.com/ocean-cloud-tos/9ceb9234123440089987665432111234~tplv-a9rns2rl98-image.png",
+        coachSmile: "https://p3-flow-image-sign.byteimg.com/ocean-cloud-tos/6d299234123440089987665432111234~tplv-a9rns2rl98-image.png",
+        coachSerious: "https://p3-flow-image-sign.byteimg.com/ocean-cloud-tos/fba59234123440089987665432111234~tplv-a9rns2rl98-image.png",
+        car: "https://p3-flow-image-sign.byteimg.com/ocean-cloud-tos/249b9234123440089987665432111234~tplv-a9rns2rl98-image.png"
+    }
+};
+
+// ========== BGM钢琴曲 WebAudio ==========
+let audioContext;
+let currentBgm = null;
+const BGM_LIST = {
+    normal: {type:"piano",tempo:110,mode:"light"},
+    tense: {type:"piano",tempo:125,mode:"tense"},
+    sad: {type:"piano",tempo:85,mode:"sad"},
+    warm: {type:"piano",tempo:95,mode:"warm"},
+    panic: {type:"piano",tempo:140,mode:"panic"}
+};
+
+function initAudio(){
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+}
+function playBgm(name){
+    stopBgm();
+    const cfg = BGM_LIST[name];
+    // 简易钢琴合成
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    osc.type = "sine";
+    osc.frequency.value = 262;
+    gain.gain.value = 0.12;
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+    osc.start();
+    currentBgm = {osc,gain};
+}
+function stopBgm(){
+    if(currentBgm){
+        currentBgm.gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime+0.8);
+        setTimeout(()=>currentBgm.osc.stop(),800);
+        currentBgm=null;
+    }
+}
+
+// ========== DOM元素 ==========
+const titleScreen = document.getElementById("title-screen");
+const bgLayer = document.getElementById("bg-layer");
+const cgLayer = document.getElementById("cg-layer");
+const charCgImg = document.getElementById("char-cg");
+const carCgImg = document.getElementById("car-cg");
+const dialogBox = document.getElementById("dialog-box");
+const speakerEl = document.getElementById("speaker");
+const dialogTextEl = document.getElementById("dialog-text");
+const choiceContainer = document.getElementById("choice-container");
+const menuBtn = document.getElementById("menu-btn");
+const endingScreen = document.getElementById("ending-screen");
+const endingText = document.getElementById("ending-text");
+const restartBtn = document.getElementById("restart-btn");
+
+// ========== 画面控制函数 ==========
+function setBg(bgName){
+    bgLayer.style.backgroundImage = `url(${RESOURCES.bg[bgName]})`;
+}
+function showCharCg(cgName){
+    charCgImg.src = RESOURCES.cg[cgName];
+    charCgImg.style.opacity = 1;
+    carCgImg.style.opacity = 0;
+}
+function showCarCg(){
+    carCgImg.src = RESOURCES.cg.car;
+    carCgImg.style.opacity = 1;
+    charCgImg.style.opacity = 0;
+}
+function hideAllCg(){
+    charCgImg.style.opacity = 0;
+    carCgImg.style.opacity = 0;
+}
+
+// ========== 对话系统 ==========
+let scriptQueue = [];
+let choiceCallback = null;
+
+function showDialog(speaker, text){
+    speakerEl.innerText = speaker;
+    dialogTextEl.innerText = text;
+    dialogBox.classList.remove("hidden");
+    choiceContainer.classList.add("hidden");
+}
+function showChoices(choices, callback){
+    choiceContainer.innerHTML = "";
+    choiceCallback = callback;
+    choices.forEach((opt,idx)=>{
+        const btn = document.createElement("button");
+        btn.className = "choice-btn";
+        btn.innerText = opt;
+        btn.onclick = ()=>{
+            choiceCallback(idx);
+        }
+        choiceContainer.appendChild(btn);
+    })
+    dialogBox.classList.add("hidden");
+    choiceContainer.classList.remove("hidden");
+}
+function showEnding(text){
+    endingText.innerText = text;
+    endingScreen.style.display = "flex";
+    dialogBox.classList.add("hidden");
+    choiceContainer.classList.add("hidden");
+}
+
+// ========== 游戏剧情 ==========
+function startGame(){
+    titleScreen.classList.add("hidden");
+    menuBtn.classList.remove("hidden");
+    initAudio();
+    playBgm("warm");
+
+    setBg("gate");
+    showCharCg("girl");
+    showDialog("女主","暑假，我来到驾校报名学车。");
+    setTimeout(()=>{
+        showDialog("女主","接待我的是一位年纪不小的教练。");
+        setTimeout(()=>{
+            showCharCg("coachSmile");
+            showDialog("教练","小姑娘，想学车是吧？来，我带你熟悉熟悉。");
+            setTimeout(()=>{
+                showChoices(["认真跟着教练学","有点害怕想退缩"],(sel)=>{
+                    if(sel === 0){
+                        routeGoodEnd();
+                    }else{
+                        routeBadEnd1();
+                    }
+                })
+            },1200)
+        },1200)
+    },1200)
+}
+
+// 结局1：冲撞结局
+function routeBadEnd1(){
+    stopBgm();
+    playBgm("panic");
+    setBg("crash");
+    showCarCg();
+    showDialog("","意外发生，教练车失控冲了过来……");
+    setTimeout(()=>{
+        showEnding("结局一：失控的夏日\n事故发生，一切戛然而止。");
+    },1800);
+}
+
+// 结局2：安全带勒住
+function routeBadEnd2(){
+    stopBgm();
+    playBgm("tense");
+    setBg("seatbelt");
+    showCharCg("coachAngry");
+    showDialog("教练","系好安全带！！");
+    setTimeout(()=>{
+        showEnding("结局二：紧绷的束缚\n安全带死死勒住，窒息感扑面而来。");
+    },1800);
+}
+
+// 好结局 合照
+function routeGoodEnd(){
+    stopBgm();
+    playBgm("warm");
+    setBg("photo");
+    showCharCg("coachSmile");
+    showDialog("教练","不错啊小姑娘，顺利拿证啦！来，拍张合照留念。");
+    setTimeout(()=>{
+        showEnding("结局三：夏日驾校恋曲\n这个夏天，我和教练留下了难忘的回忆。");
+    },2000);
+}
+
+// ========== 事件绑定 ==========
+document.getElementById("start-btn").addEventListener("click",startGame);
+restartBtn.addEventListener("click",()=>{
+    endingScreen.style.display="none";
+    titleScreen.classList.remove("hidden");
+    hideAllCg();
+    stopBgm();
+});
+dialogBox.addEventListener("click",()=>{
+    // 点击对话框推进剧情，你可以在这里扩展剧情脚本
+});
+
+// 点击屏幕跳过
+document.body.addEventListener("click",(e)=>{
+    if(e.target === dialogBox || e.target === dialogTextEl || e.target === speakerEl){
+        // 后续可以写脚本队列推进逻辑
+    }
+})
+</script>
+</body>
+</html>
